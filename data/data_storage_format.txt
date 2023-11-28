@@ -4,4 +4,11 @@ structure:[String]
 --tasks 
 key:"TASKS"
 structure:[Task] # Task class definition in src/task.py
+--Task
+{
+    "ID":int,
+    "Title":str,
+    "Done":bool,
+    "Tags":[tag] # tag is just string
+}
 --repeated # In the future
