@@ -1,0 +1,7 @@
+--tags
+key:"TAGS"
+structure:[String]
+--tasks 
+key:"TASKS"
+structure:[Task] # Task class definition in src/task.py
+--repeated # In the future
