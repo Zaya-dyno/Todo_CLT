@@ -14,8 +14,9 @@ class Screen:
         print("-\n"*self.Scr_h,end="")
 
     def render_cmd(self):
-        print("Enter_cmd",end="\r")
-        input("")
+        print("\n"*(self.Cmd_h - 1),end="")
+        print("\033[%dA"%(self.Cmd_h - 1), end="")
+        print("Enter_cmd:",end="")
 
     def render(self):
         self.render_scr()
