@@ -49,7 +49,8 @@ class List_scr:
         frame += temp
         frame += Frame.LEFT_DOWN
         frame += Frame.HOR * (self.COL - 2) + Frame.RIGHT_DOWN
-        print(frame)
+        frame += "\n"
+        print(frame, end="")
         print("\033[{}A".format(self.ROW), end="")
 
     def to_new_section(self):
