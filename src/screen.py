@@ -1,4 +1,6 @@
 import os
+from helper import printf
+
 class Screen:
     COL = None
     ROW = None
@@ -50,18 +52,18 @@ class List_scr:
         frame += Frame.LEFT_DOWN
         frame += Frame.HOR * (self.COL - 2) + Frame.RIGHT_DOWN
         frame += "\n"
-        print(frame, end="")
-        print("\033[{}A".format(self.ROW), end="")
+        printf(frame)
+        printf("\033[{}A".format(self.ROW))
 
     def to_new_section(self):
-        print("\033[{}B".format(self.ROW), end="")
+        printf("\033[{}B".format(self.ROW))
 
     def render_header(self):
         headers = self.Data.get_tags_header()
         top = " \u25C6 ".join(headers)
-        print("\033[B\033[C",end="")
-        print(top,end="")
-        print("\033[{}B".format(self.ROW-1), end="")
+        printf("\033[B\033[C")
+        printf(top)
+        printf("\033[{}B".format(self.ROW-1))
 
     def render(self):
         self.render_frame()
@@ -76,6 +78,6 @@ class Cmd_scr:
         self.ROW = row
         self.COL = col
     def render(self):
-        print("\n"*(self.ROW - 1),end="")
-        print("\033[%dA"%(self.ROW - 1), end="")
-        print("Enter_cmd:",end="")
+        printf("\n"*(self.ROW - 1))
+        printf("\033[%dA"%(self.ROW - 1))
+        printf("Enter_cmd:")
