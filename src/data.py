@@ -1,7 +1,12 @@
 import os,json
+from task import Task
+
 class Data:
     config = None
     data_dir = None 
+    tasks = []
+    repTasks = []
+    i = 0 # temp solution for id
 
     def __init__(self):
         self.find_data_dir()
@@ -20,5 +25,22 @@ class Data:
             self.find_data_dir()
 
         config_file = os.path.join(self.data_dir,file)
+        raw = None
         with open(config_file,"r") as file:
-            return json.load(file)
+            raw = json.load(file)
+        return raw
+
+    def get_new_id(self):
+        self.i += 1
+        return self.i
+
+    def add_task(self,title,tags,done=False,iden=None):
+        if (iden == None):
+            iden = self.get_new_id()
+        self.tasks.append(Task(iden,title,done,tags))
+
+    def get_tags_header(self):
+        return ["today","urgent"]
+    def print_tasks_naive(self):
+        for task in self.tasks:
+            print(task)
