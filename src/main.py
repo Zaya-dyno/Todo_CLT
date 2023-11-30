@@ -1,10 +1,15 @@
 from todo import Todo
 import logging
-
+from curses import wrapper
+import curses
 logging.basicConfig(level=logging.DEBUG,
                     filename="data/log",
                     filemode="w")
 
-if __name__ == "__main__":
-    todo = Todo()
+def main(scr):
+    todo = Todo(scr)
     todo.run()
+
+if __name__ == "__main__":
+    wrapper(main)
+
