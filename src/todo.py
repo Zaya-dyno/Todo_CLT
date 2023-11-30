@@ -11,6 +11,5 @@ class Todo:
 
     def run(self):
         self.Screen.render()
-        self.Screen.set_catch_signal()
         self.Screen.get_input()
 

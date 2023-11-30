@@ -1,7 +1,10 @@
-import os,logging
+import os,logging,curses
+from enum import Enum
 from helper import printf
-import curses
-import time
+
+class Mode(Enum):
+    Scr = 1
+    Cmd = 2
 
 class Screen:
     COL = None
@@ -10,6 +13,7 @@ class Screen:
     cmd_scr = None
     Data = None
     config = None
+    mode = Mode.Cmd
 
     def __init__(self, data, scr):
         self.scr = scr
@@ -31,21 +35,26 @@ class Screen:
         self.clean_screen()
         self.list_scr.render()
         self.cmd_scr.render()
-        time.sleep(1)
     
     def get_input(self):
-        pass
+        if self.mode == Mode.Scr:
+            self.list_scr.get_input()
+        else:
+            self.cmd_scr.get_input()
 
     def set_catch_signal(self):
         pass
 
 class Frame:
-    LEFT_UP = "\u250F"
-    LEFT_DOWN = "\u2517"
-    RIGHT_UP = "\u2513"
-    RIGHT_DOWN = "\u251B"
-    HOR = "\u2501"
-    VER = "\u2503"
+    R_D = "\u250F"
+    U_R = "\u2517"
+    D_L = "\u2513"
+    U_L = "\u251B"
+    R_L = "\u2501"
+    U_D = "\u2503"
+    U_R_D = "\u2523"
+    U_D_L = "\u252B"
+    HEAD_SEP = " \u25C6 "
 
 class List_scr:
     ROW = None
@@ -53,7 +62,7 @@ class List_scr:
     Data = None
     Start = None
     Chosen_tag = 0
-    Color = {"high":"39;46"}
+    Start_head = (1,1)
 
     def __init__(self,row,col,data,start=(0,0)):
         self.ROW = row
@@ -63,33 +72,40 @@ class List_scr:
         self.scr = curses.newwin(row,col,start[0],start[1])
 
     def render_frame(self):
-        frame = Frame.LEFT_UP
-        frame += Frame.HOR * (self.COL - 2)
-        frame += Frame.RIGHT_UP
+        frame = Frame.R_D
+        frame += Frame.R_L * (self.COL - 2)
+        frame += Frame.D_L
         self.scr.insstr(0,0,frame)
-        logging.debug(self.COL)
-        logging.debug(self.scr.getmaxyx())
         for i in range(1,self.ROW-1):
-            logging.debug(i)
-            self.scr.insstr(i,0,Frame.VER)
-            self.scr.insstr(i,self.COL-1,Frame.VER)
-        frame = Frame.LEFT_DOWN
-        frame += Frame.HOR * (self.COL - 2)
-        frame += Frame.RIGHT_DOWN
+            self.scr.insstr(i,0,Frame.U_D)
+            self.scr.insstr(i,self.COL-1,Frame.U_D)
+        frame = Frame.U_R
+        frame += Frame.R_L * (self.COL - 2)
+        frame += Frame.U_L
         self.scr.insstr(self.ROW-1,0,frame)
 
-    def add_color(self, text, key):
-        return text 
+    def get_input(self):
+        self.scr.getch()
 
     def render_header(self):
         headers = self.Data.get_tags_header()
-        headers[self.Chosen_tag] = self.add_color(headers[self.Chosen_tag], "high")
-        top = " \u25C6 ".join(headers)
-        self.scr.addstr(1,1,top)
+        self.scr.move(self.Start_head[0],
+                      self.Start_head[1])
+        for i in range(len(headers)):
+            flag = 0
+            if i != 0:
+                self.scr.addstr(Frame.HEAD_SEP)
+            if i == self.Chosen_tag:
+                flag = curses.A_UNDERLINE
+            self.scr.addstr(headers[i],flag)
+        y,x = self.scr.getyx()
+        self.scr.move(y+1,
+                      0)
 
     def render(self):
         self.render_frame()
         self.render_header()
+
         self.scr.refresh()
 
 class Cmd_scr:
@@ -102,6 +118,16 @@ class Cmd_scr:
         self.COL = col
         self.Start = start
         self.scr = curses.newwin(row,col,start[0],start[1])
+
+    def get_input(self):
+        curses.echo()
+        while True:
+            key = self.scr.getch()
+            if (key < 26):
+                return 
+                pass
+            key = self.scr.getch()
+            logging.debug(key)
 
     def render(self):
         self.scr.addstr(0,0,"Enter cmd:")
