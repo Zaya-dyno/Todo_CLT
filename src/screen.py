@@ -43,6 +43,8 @@ class List_scr:
     COL = None
     Data = None
     Start = None
+    Chosen_tag = 0
+    Color = {"high":"39;46"}
 
     def __init__(self,row,col,data,start=(1,1)):
         self.ROW = row
@@ -69,9 +71,16 @@ class List_scr:
         frame += "\n"
         printf(frame)
 
+    def add_color(self, text, key):
+        ret = "\033[" + self.Color[key] + "m"
+        ret += text
+        ret += "\033[0m"
+        return ret
+
     def render_header(self):
         self.ml_cur(1,1)
         headers = self.Data.get_tags_header()
+        headers[self.Chosen_tag] = self.add_color(headers[self.Chosen_tag], "high")
         top = " \u25C6 ".join(headers)
         printf(top)
 
