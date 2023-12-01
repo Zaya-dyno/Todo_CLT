@@ -10,6 +10,8 @@ class Todo:
         self.Screen = screen.Screen(self.Data, scr)
 
     def run(self):
-        self.Screen.render()
-        self.Screen.get_input()
+        ret = 0
+        while ret == 0:
+            self.Screen.render()
+            ret = self.Screen.get_input()
 

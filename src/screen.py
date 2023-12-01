@@ -35,12 +35,35 @@ class Screen:
         self.clean_screen()
         self.list_scr.render()
         self.cmd_scr.render()
+
+    def add_task(self,args):
+        self.Data.add_task(args[0],[])
+        pass
+
+    def execute_line(self,cmd):
+        tokens = cmd.split()
+        if tokens[0] == 'a' or tokens[0] == 'add':
+            self.add_task(tokens[1:])
+        else:
+            logging.debug('invalid cmd')
+
+    def execute_cmd(self,cmd):
+        if (type(cmd) == int):
+            if (cmd == 6):
+                self.mode = Mode.Scr
+            return 1
+        else:
+            self.execute_line(cmd)
+            return 0
     
     def get_input(self):
+        command = ""
         if self.mode == Mode.Scr:
-            self.list_scr.get_input()
+            command = self.list_scr.get_input()
         else:
-            self.cmd_scr.get_input()
+            command = self.cmd_scr.get_input()
+        ret = self.execute_cmd(command)
+        return ret
 
     def set_catch_signal(self):
         pass
@@ -56,6 +79,11 @@ class Frame:
     U_D_L = "\u252B"
     HEAD_SEP = " \u25C6 "
 
+
+class CMDS:
+    NEW_LINE = 10
+    SCR_MODE = 6
+
 class List_scr:
     ROW = None
     COL = None
@@ -63,6 +91,7 @@ class List_scr:
     Start = None
     Chosen_tag = 0
     Start_head = (1,1)
+    Start_list = (2,1)
 
     def __init__(self,row,col,data,start=(0,0)):
         self.ROW = row
@@ -70,6 +99,7 @@ class List_scr:
         self.Data = data
         self.Start = start
         self.scr = curses.newwin(row,col,start[0],start[1])
+        self.render_frame()
 
     def render_frame(self):
         frame = Frame.R_D
@@ -102,9 +132,17 @@ class List_scr:
         self.scr.move(y+1,
                       0)
 
+    def render_list(self):
+        self.scr.move(self.Start_list[0],
+                      self.Start_list[1])
+        for task in self.Data.tasks:
+            self.scr.addstr(str(task))
+            y,x = self.scr.getyx()
+            self.scr.move(y+1,1)
+
     def render(self):
-        self.render_frame()
         self.render_header()
+        self.render_list()
 
         self.scr.refresh()
 
@@ -121,14 +159,19 @@ class Cmd_scr:
 
     def get_input(self):
         curses.echo()
+        command = ""
         while True:
             key = self.scr.getch()
-            if (key < 26):
-                return 
-                pass
-            key = self.scr.getch()
-            logging.debug(key)
+            if (key == CMDS.SCR_MODE): # go screen mode
+                command = key
+                break
+            if (key == CMDS.NEW_LINE):
+                break 
+            command += chr(key)
+        curses.noecho()
+        return command
 
     def render(self):
+        self.scr.clear()
         self.scr.addstr(0,0,"Enter cmd:")
         self.scr.refresh()
