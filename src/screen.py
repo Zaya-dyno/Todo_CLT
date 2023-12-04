@@ -39,13 +39,24 @@ class Screen:
     def add_task(self,args):
         self.Data.add_task(args[0],[])
         pass
+    
+    def remove_task(self,args):
+        pass
+
+    def done_task(self,args):
+        pass
+
+    def edit_task(self,args):
+        pass
 
     def execute_line(self,cmd):
+        if cmd == "":
+            return
         tokens = cmd.split()
         if tokens[0] == 'a' or tokens[0] == 'add':
             self.add_task(tokens[1:])
         else:
-            logging.debug('invalid cmd')
+            pass
 
     def execute_cmd(self,cmd):
         if (type(cmd) == int):
@@ -143,8 +154,8 @@ class List_scr:
     def render(self):
         self.render_header()
         self.render_list()
-
         self.scr.refresh()
+
 
 class Cmd_scr:
     ROW = None
@@ -156,19 +167,90 @@ class Cmd_scr:
         self.COL = col
         self.Start = start
         self.scr = curses.newwin(row,col,start[0],start[1])
+        self.screen_set()
+        self.y_m, self.x_m = self.scr.getmaxyx()
+
+    def screen_set(self):
+        self.scr.keypad(True)
+    
+    def set_buf(self):
+        (y,x) = self.scr.getyx()
+        self.cur_loc = y*self.x_m+x 
+        self.cur_buf_sta = y*self.x_m+x
+        self.cur_buf_end = self.cur_buf_sta + 1
+        self.cur_buf_max = self.y_m*self.x_m 
+        self.cur_cmd_buf = ""
+
+    def move(self,am):
+        loc = self.cur_loc
+        dest = loc + am
+        if (dest < self.cur_buf_sta or dest >= self.cur_buf_end):
+            return
+        self.cur_loc = dest
+        self.scr.move(dest//self.x_m,dest%self.x_m)
+
+    def cur_loc_buf(self):
+        return self.cur_loc - self.cur_buf_sta
+
+    def move_cursor(self):
+        self.scr.move(self.cur_loc//self.x_m,self.cur_loc%self.x_m)
+    
+    def addch(self,char):
+        cur = self.cur_loc_buf()
+        self.cur_buf_end += 1
+        self.cur_cmd_buf = self.cur_cmd_buf[:cur] + \
+                       char + self.cur_cmd_buf[cur:]
+        self.move(+1)
+
+    def remch(self):
+        cur = self.cur_loc_buf()
+        self.cur_buf_end -= 1
+        self.cur_cmd_buf = self.cur_cmd_buf[:cur-1] + \
+                           self.cur_cmd_buf[cur:]
+        self.move(-1)
+
+
+    def loc_to_yx(self,loc):
+        return (loc//self.x_m,loc%self.x_m)
+
+    def write_buf(self):
+        self.render()
+        y,x = self.loc_to_yx(self.cur_buf_sta)
+        length = len(self.cur_cmd_buf)
+        i = 0
+        while i < length:
+            cur_len = min(length-i,self.x_m-x)
+            self.scr.addstr(y,x,self.cur_cmd_buf[i:i+cur_len])
+            i += cur_len
+            y += 1
+            x = 0
+
 
     def get_input(self):
-        curses.echo()
-        command = ""
+        command = None
+        self.set_buf()
         while True:
-            key = self.scr.getch()
-            if (key == CMDS.SCR_MODE): # go screen mode
-                command = key
+            ch = self.scr.getch()
+            key = chr(ch)
+            if (ch == CMDS.SCR_MODE): # go screen mode
+                command = ch
                 break
-            if (key == CMDS.NEW_LINE):
+            elif (ch == CMDS.NEW_LINE):
                 break 
-            command += chr(key)
-        curses.noecho()
+            elif (ch == curses.KEY_LEFT):
+                self.move(-1)
+            elif (ch == curses.KEY_RIGHT):
+                self.move(+1)
+            elif (ch == curses.KEY_BACKSPACE):
+                self.remch()
+                self.write_buf()
+            else:
+                self.addch(key)
+                self.write_buf()
+            self.move_cursor()
+            self.scr.refresh()
+        if command == None:
+            command =  self.cur_cmd_buf
         return command
 
     def render(self):
