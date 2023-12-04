@@ -14,6 +14,13 @@ class Screen:
     Data = None
     config = None
     mode = Mode.Cmd
+    Functions = {}
+    F_macro = {"a":"add",
+               "d":"done",
+               "s":"start",
+               "ar":"addr",
+               "e":"end",
+               "r":"remove"}
 
     def __init__(self, data, scr):
         self.scr = scr
@@ -27,6 +34,7 @@ class Screen:
                                  self.Data)
         self.cmd_scr = Cmd_scr(Cmd_h,self.COL,
                                (Scr_h,0))
+        self.set_functions()
 
     def clean_screen(self):
         self.scr.clear()
@@ -36,7 +44,47 @@ class Screen:
         self.list_scr.render()
         self.cmd_scr.render()
 
+    def set_functions(self):
+        self.Functions["add"] = self.add_task
+        self.Functions["done"] = self.done_task
+        self.Functions["start"] = self.start_task
+        self.Functions["addr"] = self.add_repeated_task
+        self.Functions["end"] = self.end_task
+        self.Functions["remove"] = self.remove_task
+        self.Functions["save"] = self.save_data
+
+    def save_data(self):
+        self.Data.write_tasks()
+
+    def done_task(self,args):
+        try:
+            ID = int(args[0])
+        except:
+            return -1
+        done = True
+        if len(args) > 1:
+            done = not (args[1] == "r")
+        return self.Data.done_task(ID,done)
+
+    def start_task(self,args):
+        pass
+
+    def add_repeated_task(self,args):
+        pass
+
+    def end_task(self,args):
+        pass
+
     def add_task(self,args):
+        try:
+            title = args[0]
+        except:
+            return -1
+
+        try:
+            tags = args[1:]
+        except:
+            tags = []
         self.Data.add_task(args[0],[])
         pass
     
@@ -50,13 +98,24 @@ class Screen:
         pass
 
     def execute_line(self,cmd):
-        if cmd == "":
-            return
+        if cmd.isspace() or cmd == "":
+            return -1
         tokens = cmd.split()
-        if tokens[0] == 'a' or tokens[0] == 'add':
-            self.add_task(tokens[1:])
-        else:
-            pass
+        if not tokens:
+            return -1
+
+        cmd = tokens[0]
+        if cmd in self.F_macro.keys():
+            cmd = self.F_macro[cmd]
+
+        logging.debug(cmd)
+
+        if cmd not in self.Functions.keys():
+            return -1
+
+        logging.debug("execute")
+        func = self.Functions[cmd]
+        return func(tokens[1:])
 
     def execute_cmd(self,cmd):
         if (type(cmd) == int):
@@ -75,9 +134,6 @@ class Screen:
             command = self.cmd_scr.get_input()
         ret = self.execute_cmd(command)
         return ret
-
-    def set_catch_signal(self):
-        pass
 
 class Frame:
     R_D = "\u250F"
