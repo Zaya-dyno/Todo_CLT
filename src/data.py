@@ -1,4 +1,4 @@
-import os,json
+import os,json,logging
 from task import Task, Tags
 class Data:
     config = None
@@ -6,7 +6,7 @@ class Data:
     tasks = []
     repTasks = []
     reuseID = set()
-    max_ID = 0 # temp solution for id
+    max_ID = -1 
     tags = []
     tagsH = []
     tag_today = Tags("today",header=True,importance=10)
@@ -14,6 +14,35 @@ class Data:
     def __init__(self):
         self.find_data_dir()
         self.config = self.load_json("config.json")
+        self.load_data()
+
+    def load_data(self):
+        self.load_tasks()
+        self.load_reTasks()
+        self.load_tags()
+
+    def load_tasks(self):
+        raw = self.load_json("tasks.json")
+        for task in raw:
+            self.tasks.append(Task.init__dic(task))
+        
+        ids = [task.ID for task in self.tasks]
+        if len(ids) != 0:
+            high = max(ids)
+            self.max_ID = high
+            self.reuseID = set([i for i in range(ids[-1] + 1)]) - set(ids)
+
+
+    def load_reTasks(self):
+        pass
+
+    def load_tags(self):
+        raw = self.load_json("tags.json")
+        for tag in raw:
+            self.tags.append(Tags.init__dict(tag))
+        for tag in self.tags:
+            if tag.Header:
+                self.tagsH.append(tag)
 
     def get_config(self):
         return self.config
@@ -38,13 +67,14 @@ class Data:
 
         config_file = os.path.join(self.data_dir,file)
         with open(config_file,"w") as file:
-            json.dump(data,file)
+            json.dump(data,file,
+                      default=lambda o:o.__dict__,
+                      indent=4)
 
     def get_new_id(self):
-        if not self.reuseID:
-            ret = self.max_ID
+        if len(self.reuseID) == 0:
             self.max_ID += 1
-            return ret
+            return self.max_ID
         return self.reuseID.pop()
 
     def add_tagH(self,tag):
@@ -118,4 +148,7 @@ class Data:
             print(task)
 
     def write_tasks(self):
-        self.write_json("tasks.json",str(self.tasks))
+        self.write_json("tasks.json",self.tasks)
+
+    def save(self):
+        self.write_tasks()

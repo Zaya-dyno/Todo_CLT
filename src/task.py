@@ -1,3 +1,4 @@
+import logging
 class RepTask:
     def __init__(self,title,repeated,tags):
         self.Title = title
@@ -5,6 +6,13 @@ class RepTask:
         self.Tags = tags
 
 class Tags:
+    @staticmethod
+    def init__dict(dic):
+        Title = dic["Title"]
+        Header = dic["Header"]
+        Im = dic["Im"]
+        return Tags(Title,Header,Im)
+
     def __init__(self,title,header=False,importance=0):
         self.Title = title.lower()
         self.Header = header
@@ -21,7 +29,29 @@ class Tags:
     def __repr__(self):
         return self.Title
 
+    @staticmethod
+    def from_list(lis):
+        ret = []
+        for tag in lis:
+            ret.append(Tags(tag["Title"],
+                            tag["Header"],
+                            tag["Im"]))
+        return ret
+
 class Task:
+    
+    @staticmethod
+    def init__dic(dic):
+        ID = dic["ID"]
+        title = dic["Title"]
+        done = dic["Done"]
+        logging.debug(dic["Tags"])
+        tags = Tags.from_list(dic["Tags"])
+        return Task(ID,title,done,tags)
+
+    def toJson(self):
+        pass
+
     def __init__(self,iden,title,done,tags):
         self.ID = iden 
         self.Title = title

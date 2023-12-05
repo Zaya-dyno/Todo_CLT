@@ -54,7 +54,7 @@ class Screen:
         self.Functions["save"] = self.save_data
 
     def save_data(self):
-        self.Data.write_tasks()
+        self.Data.save()
 
     def done_task(self,args):
         try:
@@ -115,7 +115,11 @@ class Screen:
 
         logging.debug("execute")
         func = self.Functions[cmd]
-        return func(tokens[1:])
+        if len(tokens) == 1:
+            return func()
+        else:
+            return func(tokens[1:])
+
 
     def execute_cmd(self,cmd):
         if (type(cmd) == int):
