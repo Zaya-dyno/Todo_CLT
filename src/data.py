@@ -10,6 +10,8 @@ class Data:
     tags = []
     tagsH = []
     tag_today = Tags("today",header=True,importance=10)
+    changes = {"task":False,
+               "tags":False}
 
     def __init__(self):
         self.find_data_dir()
@@ -92,6 +94,7 @@ class Data:
             if sort:
                 self.tags.sort(key=lambda x: x.Im,
                                reverse=True)
+            
 
     def add_task(self,title,tags,done=False,iden=None,sort=True):
         if (iden == None):
@@ -103,6 +106,7 @@ class Data:
         self.tasks.append(Task(iden,title,done,tags))
         if sort:
             self.tasks.sort(key=lambda x:x.ID)
+        self.changes["task"] = True
 
     def find_task(self,ID):
         low = 0
@@ -122,6 +126,7 @@ class Data:
         if not task:
             return -1
         task.Done = done 
+        self.changes["task"] = True
         return 0
 
 
@@ -138,6 +143,7 @@ class Data:
         task = self.find_task(ID)
         if task != None:
             self.tasks.remove(task)
+        self.changes["task"] = True
         return 0
 
     def get_tags_header(self):
@@ -150,5 +156,13 @@ class Data:
     def write_tasks(self):
         self.write_json("tasks.json",self.tasks)
 
+    def write_tags(self):
+        self.write_json("tags.json",self.tags)
+
     def save(self):
-        self.write_tasks()
+        if self.changes["task"]:
+            self.write_tasks()
+            self.changes["task"] = False
+        if self.changes["tags"]:
+            self.write_tags()
+            self.changes["tags"] = False

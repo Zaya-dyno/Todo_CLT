@@ -51,9 +51,8 @@ class Screen:
         self.Functions["addr"] = self.add_repeated_task
         self.Functions["end"] = self.end_task
         self.Functions["remove"] = self.remove_task
-        self.Functions["save"] = self.save_data
 
-    def save_data(self):
+    def save(self):
         self.Data.save()
 
     def done_task(self,args):
@@ -207,7 +206,7 @@ class List_scr:
         self.scr.move(self.Start_list[0],
                       self.Start_list[1])
         for task in self.Data.tasks:
-            self.scr.addstr(str(task))
+            self.scr.addstr(task.nice_str())
             y,x = self.scr.getyx()
             self.scr.move(y+1,1)
 

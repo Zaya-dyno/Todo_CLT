@@ -64,3 +64,18 @@ class Task:
         ret += str(self.Tags)
         ret += "}"
         return ret
+
+    def nice_str(self):
+        ret = ""
+        if self.Done:
+            ret += "\u2611"
+        else:
+            ret += "\u2610"
+
+        ret += " "
+        ret += str(self.ID)
+        ret += " "
+        ret += self.Title
+        ret += " --"
+        ret += ",".join([str(t) for t in self.Tags])
+        return ret

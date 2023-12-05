@@ -2,6 +2,7 @@ from todo import Todo
 import logging
 from curses import wrapper
 import signal
+
 logging.basicConfig(level=logging.DEBUG,
                     filename="data/log",
                     filemode="w")

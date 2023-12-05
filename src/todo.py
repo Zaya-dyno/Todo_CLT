@@ -14,4 +14,5 @@ class Todo:
         while ret == 0:
             self.Screen.render()
             ret = self.Screen.get_input()
+            self.Screen.save()
 
