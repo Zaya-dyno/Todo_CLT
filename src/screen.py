@@ -56,13 +56,16 @@ class Screen:
         self.Data.save()
 
     def done_task(self,args):
+        logging.debug(args)
         try:
             ID = int(args[0])
         except:
+            logging.debug("in except")
             return -1
         done = True
         if len(args) > 1:
             done = not (args[1] == "r")
+        logging.debug(args)
         return self.Data.done_task(ID,done)
 
     def start_task(self,args):
@@ -85,13 +88,15 @@ class Screen:
         except:
             tags = []
         self.Data.add_task(args[0],[])
-        pass
     
     def remove_task(self,args):
-        pass
-
-    def done_task(self,args):
-        pass
+        logging.debug(args)
+        try:
+            ID = int(args[0])
+        except:
+            return -1
+        logging.debug(func)
+        return self.Data.remove_task(ID)
 
     def edit_task(self,args):
         pass
@@ -107,16 +112,14 @@ class Screen:
         if cmd in self.F_macro.keys():
             cmd = self.F_macro[cmd]
 
-        logging.debug(cmd)
-
         if cmd not in self.Functions.keys():
             return -1
 
-        logging.debug("execute")
         func = self.Functions[cmd]
         if len(tokens) == 1:
             return func()
         else:
+            logging.debug(func)
             return func(tokens[1:])
 
 
@@ -153,6 +156,7 @@ class Frame:
 class CMDS:
     NEW_LINE = 10
     SCR_MODE = 6
+    DELETE = 127
 
 class List_scr:
     ROW = None
@@ -169,20 +173,6 @@ class List_scr:
         self.Data = data
         self.Start = start
         self.scr = curses.newwin(row,col,start[0],start[1])
-        self.render_frame()
-
-    def render_frame(self):
-        frame = Frame.R_D
-        frame += Frame.R_L * (self.COL - 2)
-        frame += Frame.D_L
-        self.scr.insstr(0,0,frame)
-        for i in range(1,self.ROW-1):
-            self.scr.insstr(i,0,Frame.U_D)
-            self.scr.insstr(i,self.COL-1,Frame.U_D)
-        frame = Frame.U_R
-        frame += Frame.R_L * (self.COL - 2)
-        frame += Frame.U_L
-        self.scr.insstr(self.ROW-1,0,frame)
 
     def get_input(self):
         self.scr.getch()
@@ -211,6 +201,8 @@ class List_scr:
             self.scr.move(y+1,1)
 
     def render(self):
+        self.scr.clear()
+        self.scr.border()
         self.render_header()
         self.render_list()
         self.scr.refresh()
@@ -291,6 +283,7 @@ class Cmd_scr:
         while True:
             ch = self.scr.getch()
             key = chr(ch)
+            logging.debug(ch)
             if (ch == CMDS.SCR_MODE): # go screen mode
                 command = ch
                 break
@@ -300,7 +293,8 @@ class Cmd_scr:
                 self.move(-1)
             elif (ch == curses.KEY_RIGHT):
                 self.move(+1)
-            elif (ch == curses.KEY_BACKSPACE):
+            elif (ch == curses.KEY_BACKSPACE or\
+                  ch == CMDS.DELETE):
                 self.remch()
                 self.write_buf()
             else:

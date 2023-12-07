@@ -110,12 +110,16 @@ class Data:
 
     def find_task(self,ID):
         low = 0
-        high = 0
+        high = len(self.tasks)-1
         while low<=high:
+            logging.debug("--")
+            logging.debug(low)
+            logging.debug(high)
             mid = (low + high)//2
-            if (self.tags[mid].iden == ID):
-                return self.tags[mid]
-            elif (self.tags[mid].iden < ID):
+            logging.debug(self.tasks[mid].ID)
+            if (self.tasks[mid].ID == ID):
+                return self.tasks[mid]
+            elif (self.tasks[mid].ID > ID):
                 high = mid - 1
             else:
                 low = mid + 1
@@ -123,6 +127,7 @@ class Data:
     
     def done_task(self,ID,done=True):
         task = self.find_task(ID)
+        logging.debug(task)
         if not task:
             return -1
         task.Done = done 
@@ -142,6 +147,7 @@ class Data:
     def remove_task(self,ID):
         task = self.find_task(ID)
         if task != None:
+            self.reuseID.add(ID)
             self.tasks.remove(task)
         self.changes["task"] = True
         return 0

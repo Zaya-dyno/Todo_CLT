@@ -45,7 +45,6 @@ class Task:
         ID = dic["ID"]
         title = dic["Title"]
         done = dic["Done"]
-        logging.debug(dic["Tags"])
         tags = Tags.from_list(dic["Tags"])
         return Task(ID,title,done,tags)
 
